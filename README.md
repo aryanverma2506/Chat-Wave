@@ -83,7 +83,9 @@ With both the frontend and backend deployed, you can now access the web app thro
 
 1. Open your web browser and go to [http://localhost:3000](http://localhost:3000) (or the specified port if you modified it).
 
-2. The web app will be loaded, and you can interact with its features.
+2. The web app will be loaded, and now you have to register yourself by providing a username and password.
+
+3. After registering, you can chat with anyone who has already registered on the app.
 
 # Folder Structure
 
