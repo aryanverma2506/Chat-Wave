@@ -14,8 +14,10 @@ This repository contains a web application with a frontend built using React.js 
 
 1. Clone the repository to your local machine:
 
-* git clone [https://github.com/your-username/Chat-Wave-MERN-Application.git](https://github.com/your-username/Chat-Wave-MERN-Application.git)
-* `cd Chat-Wave-MERN-Application`
+```markdown
+git clone [https://github.com/your-username/Chat-Wave-MERN-Application.git](https://github.com/your-username/Chat-Wave-MERN-Application.git)
+cd Chat-Wave-MERN-Application
+```
 
 2. Install frontend dependencies:
 
