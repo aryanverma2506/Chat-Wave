@@ -26,8 +26,10 @@ npm install
 
 3. Install backend dependencies:
 
-* `cd server`
-* `npm install`
+```markdown
+cd server
+npm install
+```
 
 ## Deployment
 
@@ -37,15 +39,19 @@ To deploy the frontend, you have two options:
 
 1. Development Build: Run the frontend in development mode with hot-reloading.
 
-* `cd client`
-* `npm start`
+```markdown
+cd client
+npm start
+```
 
 By default, the frontend will run on [http://localhost:3000](http://localhost:3000).
 
 2. Production Build: Build the frontend for production.
 
-* `cd client`
-* `npm run build`
+```markdown
+cd client
+npm run build
+```
 
 After running the production build, you will have a build directory containing the optimized files.
 
@@ -55,13 +61,17 @@ To deploy the backend, you will need to compile the TypeScript code into JavaScr
 
 1. Development Mode - Start the server:
 
-* `cd server`
-* `npm run dev`
+```markdown
+cd server
+npm run dev
+```
 
 2. Production Mode - Start the server:
 
-* `cd server`
-* `npm start`
+```markdown
+cd server
+npm start
+```
 
 By default, the backend will run on [http://localhost:8080](http://localhost:8080).
 
@@ -75,6 +85,7 @@ With both the frontend and backend deployed, you can now access the web app thro
 
 # Folder Structure
 
+```markdown
 Chat-Wave-MERN-Application/
 ├── client/
 │   ├── public/
@@ -117,6 +128,7 @@ Chat-Wave-MERN-Application/
 ├── .gitignore
 ├── README.md
 └── ...
+```
 
 # Sneak Peek
 
