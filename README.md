@@ -4,7 +4,7 @@ This repository contains a web application with a frontend built using React.js 
 
 ## Note
 
-> You may need to configure your own `.env` and `nodemon.json` files, although I have already provided sample configuration files named `.env.sample` and `nodemon.sample.json.`
+> You may need to configure your own `.env` and `nodemon.json` files, although I have already provided sample configuration files named `.env.sample` and `nodemon.sample.json`.
 
 > I recommend running the following command `npm run dev` in the server folder since it will directly take the environmental variables from the nodemon.json file. Otherwise, you will have to provide all the environmental variables in the command line itself.
 
@@ -18,18 +18,18 @@ This repository contains a web application with a frontend built using React.js 
 
 1. Clone the repository to your local machine:
 
-`git clone [https://github.com/your-username/Chat-Wave-MERN-Application.git](https://github.com/your-username/Chat-Wave-MERN-Application.git)`
-`cd Chat-Wave-MERN-Application`
+* git clone [https://github.com/your-username/Chat-Wave-MERN-Application.git](https://github.com/your-username/Chat-Wave-MERN-Application.git)
+* `cd Chat-Wave-MERN-Application`
 
 2. Install frontend dependencies:
 
-`cd client`
-`npm install`
+* `cd client`
+* `npm install`
 
 3. Install backend dependencies:
 
-`cd server`
-`npm install`
+* `cd server`
+* `npm install`
 
 ## Deployment
 
@@ -39,15 +39,15 @@ To deploy the frontend, you have two options:
 
 1. Development Build: Run the frontend in development mode with hot-reloading.
 
-`cd client`
-`npm start`
+* `cd client`
+* `npm start`
 
 By default, the frontend will run on [http://localhost:3000](http://localhost:3000).
 
 2. Production Build: Build the frontend for production.
 
-`cd client`
-`npm run build`
+* `cd client`
+* `npm run build`
 
 After running the production build, you will have a build directory containing the optimized files.
 
@@ -57,13 +57,13 @@ To deploy the backend, you will need to compile the TypeScript code into JavaScr
 
 1. Development Mode - Start the server:
 
-`cd server`
-`npm run dev`
+* `cd server`
+* `npm run dev`
 
 2. Production Mode - Start the server:
 
-`cd server`
-`npm start`
+* `cd server`
+* `npm start`
 
 By default, the backend will run on [http://localhost:8080](http://localhost:8080).
 
