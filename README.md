@@ -118,13 +118,13 @@ Chat-Wave-MERN-Application/
 
 # Sneak Peek
 
-![](screenshots/Screenshot (1).png)
+![](screenshots/Screenshot-1.png)
 
 
-![](screenshots/Screenshot (2).png)
+![](screenshots/Screenshot-2.png)
 
 
-![](screenshots/Screenshot (3).png)
+![](screenshots/Screenshot-3.png)
 
 
-![](screenshots/Screenshot (4).png)
+![](screenshots/Screenshot-4.png)
