@@ -1,4 +1,4 @@
-# Web App with React.js Frontend and TypeScript Backend
+# Web App with React.js Frontend and Node.js Backend
 
 This repository contains a web application with a frontend built using React.js and a backend built using Node.js. Below are the instructions on how to install, deploy, run, and use the web app.
 
