@@ -4,9 +4,9 @@ This repository contains a web application with a frontend built using React.js 
 
 ## Note
 
-> []You may need to configure your own .env and nodemon.json files, although I have already provided sample configuration files named .env.sample and nodemon.sample.json.
-> []I recommend running the following command `npm run dev` in the server folder since it will directly take the environmental variables from the nodemon.json file. Otherwise, you will have to provide all the environmental variables in the command line itself.
-> []You can find images related to this web application at the bottom of this file.
+> [x] You may need to configure your own .env and nodemon.json files, although I have already provided sample configuration files named .env.sample and nodemon.sample.json.
+> [] I recommend running the following command `npm run dev` in the server folder since it will directly take the environmental variables from the nodemon.json file. Otherwise, you will have to provide all the environmental variables in the command line itself.
+> [] You can find images related to this web application at the bottom of this file.
 
 ## Installation
 
