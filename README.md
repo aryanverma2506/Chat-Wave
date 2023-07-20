@@ -19,8 +19,10 @@ This repository contains a web application with a frontend built using React.js 
 
 2. Install frontend dependencies:
 
-* `cd client`
-* `npm install`
+```markdown
+cd client
+npm install
+```
 
 3. Install backend dependencies:
 
