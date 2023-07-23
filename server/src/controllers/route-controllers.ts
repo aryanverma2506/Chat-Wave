@@ -6,7 +6,7 @@ import UserModel from "../models/user-model.js";
 import MessageModel from "../models/message-model.js";
 
 const jwtSecret = process.env.JWT_SECRET!;
-const expirationTimeInMs = 1000 * 60 * 60;
+const expirationTimeInMs = +process.env.JWT_TOKEN_MAX_AGE!;
 
 export const getUsers: RequestHandler = async (req, res, next) => {
   const users = await UserModel.find({}, { _id: 1, username: 1 }).exec();
@@ -74,6 +74,7 @@ export const login: RequestHandler = async (req, res, next) => {
       })
       .json({
         userId: existingUser.id,
+        maxAge: expirationTimeInMs,
       });
   } catch (error: any) {
     console.log(error);
@@ -126,6 +127,7 @@ export const register: RequestHandler = async (req, res, next) => {
       })
       .json({
         userId: createdUser.id,
+        maxAge: expirationTimeInMs,
       });
   } catch (error: any) {
     console.log(error);

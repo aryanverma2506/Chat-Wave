@@ -88,15 +88,13 @@ mongooseConnect().then(() => {
         .find((str) => str.startsWith("token="))
         ?.split("=")[1];
       if (token) {
-        jwt.verify(token, process.env.JWT_SECRET!, {}, (error, userData) => {
-          if (error) return console.log(error);
-          const { userId, username } = jwt.verify(
-            token,
-            process.env.JWT_SECRET!
-          ) as UserData;
+        try {
+          const { userId, username } = jwt.verify(token, process.env.JWT_SECRET!) as UserData;;
           connection.userId = userId;
           connection.username = username;
-        });
+        } catch (error: any) {
+          console.log(error);
+        }
       }
 
       connection.on("message", async (message: Buffer, isBinary: boolean) => {

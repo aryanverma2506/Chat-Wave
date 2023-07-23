@@ -3,7 +3,7 @@ import HttpError from "../models/http-error.js";
 import UserModel from "../models/user-model.js";
 import MessageModel from "../models/message-model.js";
 const jwtSecret = process.env.JWT_SECRET;
-const expirationTimeInMs = 1000 * 60 * 60;
+const expirationTimeInMs = +process.env.JWT_TOKEN_MAX_AGE;
 export const getUsers = async (req, res, next) => {
     const users = await UserModel.find({}, { _id: 1, username: 1 }).exec();
     res.json({ users: users });
@@ -56,6 +56,7 @@ export const login = async (req, res, next) => {
         })
             .json({
             userId: existingUser.id,
+            maxAge: expirationTimeInMs,
         });
     }
     catch (error) {
@@ -99,6 +100,7 @@ export const register = async (req, res, next) => {
         })
             .json({
             userId: createdUser.id,
+            maxAge: expirationTimeInMs,
         });
     }
     catch (error) {

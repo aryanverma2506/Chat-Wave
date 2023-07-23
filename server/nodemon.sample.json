@@ -1,6 +1,7 @@
 {
   "env": {
     "PORT": 8080,
+    "JWT_TOKEN_MAX_AGE": 3600000,
     "CLIENT_URLS": "http://localhost:3000, http://localhost:8080",
     "MONGODB_URI": "YOUR_MONGODB_URI (Ex.):- mongodb://127.0.0.1/chat-wave?retryWrites=true&w=majority",
     "JWT_SECRET": "ThisIsASuperSecretMessageAllLifeDependsOnIt"
