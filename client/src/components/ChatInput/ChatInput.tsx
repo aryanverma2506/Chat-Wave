@@ -75,6 +75,7 @@ const ChatInput: React.FC<ChatInputProps> = (props) => {
   const [mentionSuggestions, setMentionSuggestions] = useState<UserObject>({});
   const [previewData, setPreviewData] = useState<any | null>(null);
   const [previousContent, setPreviousContent] = useState<DeltaStatic>();
+
   const mentionChars = ["@"];
   const quillRef = useRef<ReactQuill>(null);
   const submitBtnRef = useRef<HTMLButtonElement>(null);

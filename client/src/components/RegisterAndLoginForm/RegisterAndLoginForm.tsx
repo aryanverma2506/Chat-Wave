@@ -6,12 +6,13 @@ import Button from "../Button/Button";
 import { UserContext, UserContextType } from "../../context/User/UserContext";
 import { useHttpClient } from "../../hooks/useHttpClient-hook";
 
+
 const RegisterAndLoginForm: React.FC = () => {
   const [username, setUsername] = useState<string>("");
   const [password, setPassword] = useState<string>("");
   const [isLoginOrRegister, setIsLoginOrRegister] = useState<string>("login");
 
-  const { setUsername: setUsernameCtx, setId: setIdCtx } =
+  const { login } =
     useContext<UserContextType>(UserContext);
 
   const { sendRequest } = useHttpClient();
@@ -20,7 +21,7 @@ const RegisterAndLoginForm: React.FC = () => {
     event.preventDefault();
     try {
       const responseData = await sendRequest({
-        url: isLoginOrRegister === "register" ? "/register" : "/login",
+        url: isLoginOrRegister === "login" ? "/login" : "/register",
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -30,8 +31,8 @@ const RegisterAndLoginForm: React.FC = () => {
           password: password,
         }),
       });
-      setUsernameCtx(username);
-      setIdCtx(responseData.userId);
+      const expirationTime = new Date(new Date().getTime() + responseData.maxAge);
+      login(responseData.userId, username, expirationTime);
     } catch (error: any) {
       console.log(error.message);
     }

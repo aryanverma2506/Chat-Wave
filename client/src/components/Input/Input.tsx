@@ -20,7 +20,7 @@ interface InputProps extends React.PropsWithChildren {
     e: React.ChangeEvent<T>
   ) => void;
   onChange?: (
-    e?: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
+    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
   ) => void;
   callback?: (...args: any[]) => void;
 }

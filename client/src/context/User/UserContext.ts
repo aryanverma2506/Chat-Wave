@@ -1,15 +1,15 @@
-import { Dispatch, SetStateAction, createContext } from "react";
+import { createContext } from "react";
 
 export interface UserContextType {
   readonly id: string | null;
   readonly username: string | null;
-  setId: Dispatch<SetStateAction<string | null>>;
-  setUsername: Dispatch<SetStateAction<string | null>>;
+  login: (providedId: string | null, providedName: string | null, tokenExpirationDate?: Date) => void;
+  logout: () => void;
 }
 
 export const UserContext = createContext<UserContextType>({
   id: "",
   username: "",
-  setId: () => {},
-  setUsername: () => {},
+  login: (providedId: string | null, providedName: string | null, tokenExpirationDate?: Date) => {},
+  logout: () => {},
 });

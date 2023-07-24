@@ -1,4 +1,5 @@
 import React, {
+  FormEvent,
   useCallback,
   useContext,
   useEffect,
@@ -14,6 +15,7 @@ import { useHttpClient } from "../../hooks/useHttpClient-hook";
 import Contact from "../Contact/Contact";
 import ChatInput from "../ChatInput/ChatInput";
 import MessageBox from "../MessageBox/MessageBox";
+import Input from "../Input/Input";
 
 interface UserObject {
   [key: string]: { username: string; online: boolean };
@@ -30,17 +32,22 @@ interface MessagesStructure {
 }
 
 const Chat: React.FC = () => {
+  const divUnderMessages = useRef<HTMLDivElement>(null);
+  const contactListRef = useRef<HTMLUListElement>(null);
+
+  const {
+    id,
+    username,
+    logout: logoutCtx,
+  } = useContext<UserContextType>(UserContext);
+
   const [webSocket, setWebSocket] = useState<WebSocket | null>(null);
-  const [onlineUsers, setOnlineUsers] = useState<UserObject | null>(null);
-  const [allUsers, setAllUsers] = useState<UserObject | null>(null);
+  const [onlineUsers, setOnlineUsers] = useState<UserObject>({});
+  const [filteredUsers, setFilteredUsers] = useState<UserObject>({});
   const [selectedUserId, setSelectedUserId] = useState<string>();
   const [file, setFile] = useState<File | null>(null);
   const [messages, setMessages] = useState<MessagesStructure[]>([]);
-
-  const divUnderMessages = useRef<HTMLDivElement>(null);
-
-  const { id, username, setId, setUsername } =
-    useContext<UserContextType>(UserContext);
+  const [searchInput, setSearchInput] = useState<string>("");
 
   const { sendRequest } = useHttpClient();
 
@@ -85,15 +92,13 @@ const Chat: React.FC = () => {
     let reconnectTimer: NodeJS.Timeout;
     function connectToWs() {
       ws = new WebSocket(`${process.env.REACT_APP_WEBSOCKET_URL!}/`);
-      setWebSocket(() => ws);
+      setWebSocket(ws);
       ws.addEventListener("message", messageHandler);
       ws.addEventListener("close", reconnect);
     }
 
     function reconnect() {
-      reconnectTimer = setTimeout(() => {
-        connectToWs();
-      }, 5000);
+      reconnectTimer = setTimeout(connectToWs, 5000);
     }
 
     connectToWs();
@@ -123,7 +128,11 @@ const Chat: React.FC = () => {
           (user: any) =>
             (allUsers[user._id] = { username: user.username, online: false })
         );
-        setAllUsers(() => ({ ...allUsers, ...onlineUsers }));
+        setFilteredUsers(() => {
+          const filteredUsers: UserObject = { ...allUsers, ...onlineUsers };
+          id && delete filteredUsers[id];
+          return filteredUsers;
+        });
       } catch (error: any) {
         console.log(error.message);
       }
@@ -158,6 +167,23 @@ const Chat: React.FC = () => {
 
   function selectContact(userId: string) {
     userId !== id && setSelectedUserId(() => userId);
+  }
+
+  function contactSearchHandler(
+    event: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
+  ) {
+    setSearchInput(() => event.target.value);
+  }
+
+  function searchSubmitHandler(event: FormEvent) {
+    event.preventDefault();
+    if (searchInput && Object.keys(filteredUsers).length > 0) {
+      const firstChild = contactListRef.current
+        ?.firstElementChild as HTMLLIElement;
+      if (firstChild) {
+        firstChild.click();
+      }
+    }
   }
 
   async function imageDownloadHandler(imageUrl: string) {
@@ -272,25 +298,14 @@ const Chat: React.FC = () => {
   async function logout() {
     try {
       await sendRequest({ url: "/logout", method: "POST" });
-      setId(() => null);
-      setUsername(() => null);
+      logoutCtx();
       setWebSocket(() => null);
-      setOnlineUsers(() => null);
-      setAllUsers(() => null);
-      setSelectedUserId(() => "");
+      setOnlineUsers(() => ({}));
+      setFilteredUsers(() => ({}));
+      setSelectedUserId(() => undefined);
       setMessages(() => []);
     } catch (error: any) {
       console.log(error.message);
-    }
-  }
-
-  const filteredUsers: UserObject = {};
-
-  if (allUsers) {
-    for (const key in allUsers) {
-      if (key !== id) {
-        filteredUsers[key] = allUsers[key];
-      }
     }
   }
 
@@ -299,31 +314,67 @@ const Chat: React.FC = () => {
       <div className="dark-theme white w-1/5 min-w-max flex flex-col">
         <div className="flex-grow">
           <Logo />
-          {Object.keys(filteredUsers).map((userId) => (
-            <Contact
-              key={userId}
-              userId={userId}
-              online={filteredUsers[userId].online}
-              selectedUserId={selectedUserId}
-              username={filteredUsers[userId].username}
-              onClick={selectContact.bind(this, userId)}
+          <form
+            onSubmit={searchSubmitHandler}
+            className="relative flex border rounded-md mx-2 mb-2 pl-4 dark-theme-2"
+          >
+            <Button type="submit" className="left-3 top-2.5 text-green-500">
+              <i className="fa-solid fa-magnifying-glass"></i>
+            </Button>
+            <Input
+              type="search"
+              value={searchInput}
+              className="dark-theme-2 w-full p-2 pl-4 pr-10 rounded-md text-gray-200 focus:outline-none"
+              onChange={contactSearchHandler}
             />
-          ))}
+            {searchInput && (
+              <Button
+                type="submit"
+                className="absolute w-10 h-full top-1/2 transform -translate-y-1/2 text-green-500 right-0"
+                onClick={() => setSearchInput(() => "")}
+              >
+                <i className="fa-regular fa-xmark"></i>
+              </Button>
+            )}
+          </form>
+          <ul className="list-none" ref={contactListRef}>
+            {Object.keys(filteredUsers).map((userId) => {
+              if (searchInput) {
+                if (
+                  filteredUsers[userId].username
+                    .toLowerCase()
+                    .includes(searchInput.toLowerCase())
+                ) {
+                  return (
+                    <Contact
+                      key={userId}
+                      userId={userId}
+                      online={filteredUsers[userId].online}
+                      selectedUserId={selectedUserId}
+                      username={filteredUsers[userId].username}
+                      onClick={selectContact.bind(null, userId)}
+                    />
+                  );
+                }
+              } else {
+                return (
+                  <Contact
+                    key={userId}
+                    userId={userId}
+                    online={filteredUsers[userId].online}
+                    selectedUserId={selectedUserId}
+                    username={filteredUsers[userId].username}
+                    onClick={selectContact.bind(null, userId)}
+                  />
+                );
+              }
+              return <React.Fragment key={userId} />;
+            })}
+          </ul>
         </div>
         <div className="flex flex-col p-2 text-center items-center justify-center">
-          <span className="flex gap-1 mr-2 mb-3 text-green-500">
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              viewBox="0 0 24 24"
-              fill="currentColor"
-              className="w-6 h-6"
-            >
-              <path
-                fillRule="evenodd"
-                d="M18.685 19.097A9.723 9.723 0 0021.75 12c0-5.385-4.365-9.75-9.75-9.75S2.25 6.615 2.25 12a9.723 9.723 0 003.065 7.097A9.716 9.716 0 0012 21.75a9.716 9.716 0 006.685-2.653zm-12.54-1.285A7.486 7.486 0 0112 15a7.486 7.486 0 015.855 2.812A8.224 8.224 0 0112 20.25a8.224 8.224 0 01-5.855-2.438zM15.75 9a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0z"
-                clipRule="evenodd"
-              />
-            </svg>
+          <span className="flex items-center gap-2 mx-auto mb-3 text-green-500">
+            <i className="fa-solid fa-circle-user text-2xl"></i>
             {username}
           </span>
           <Button
