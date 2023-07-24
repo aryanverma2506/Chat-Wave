@@ -22,7 +22,7 @@ const UserProvider: React.FC<UserProviderProps> = (props) => {
     localStorage.removeItem("tokenExpirationTime");
     setId(() => null);
     setUsername(() => null);
-  }, []);
+  }, [sendRequest]);
 
   const login = useCallback(
     (

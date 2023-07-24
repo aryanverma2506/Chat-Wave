@@ -93,8 +93,11 @@ em-emoji-picker {
   padding: 0.75rem;
   background: #0009;
   clip-path: inset(0 var(--_i, 100%) 0 0);
+  mask: linear-gradient(#000 0 0), linear-gradient(#000 0 0);
   -webkit-mask: linear-gradient(#000 0 0), linear-gradient(#000 0 0);
-  /* -webkit-mask-composite: xor; */
+  /* mask-composite: xor;
+  -webkit-mask-composite: xor; */
+  mask-clip: text, padding-box;
   -webkit-mask-clip: text, padding-box;
   margin: -1px;
 }
@@ -113,6 +116,7 @@ em-emoji-picker {
 
 @supports not (-webkit-mask-clip: text) {
   .figure figcaption {
+    mask: none;
     -webkit-mask: none;
     color: #fff;
   }

@@ -295,18 +295,13 @@ const Chat: React.FC = () => {
     }
   }
 
-  async function logout() {
-    try {
-      await sendRequest({ url: "/logout", method: "POST" });
-      logoutCtx();
-      setWebSocket(() => null);
-      setOnlineUsers(() => ({}));
-      setFilteredUsers(() => ({}));
-      setSelectedUserId(() => undefined);
-      setMessages(() => []);
-    } catch (error: any) {
-      console.log(error.message);
-    }
+  function logout() {
+    logoutCtx();
+    setWebSocket(() => null);
+    setOnlineUsers(() => ({}));
+    setFilteredUsers(() => ({}));
+    setSelectedUserId(() => undefined);
+    setMessages(() => []);
   }
 
   return (
