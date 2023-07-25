@@ -178,8 +178,9 @@ const Chat: React.FC = () => {
   function searchSubmitHandler(event: FormEvent) {
     event.preventDefault();
     if (searchInput && Object.keys(filteredUsers).length > 0) {
-      const firstChild = contactListRef.current
-        ?.firstElementChild as HTMLLIElement;
+      const firstChild = contactListRef.current?.querySelector(
+        "li"
+      ) as HTMLLIElement;
       if (firstChild) {
         firstChild.click();
       }
