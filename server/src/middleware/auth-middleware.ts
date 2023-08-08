@@ -5,7 +5,8 @@ import HttpError from "../models/http-error.js";
 
 export interface UserData {
   userId: string;
-  username: string;
+  name: string;
+  profilePic: string;
 }
 
 declare global {
@@ -16,7 +17,7 @@ declare global {
   }
 }
 
-const checkAuth: RequestHandler = (req, res, next) => {
+const authMiddleware: RequestHandler = (req, res, next) => {
   try {
     const token = req.cookies.token;
     if (!token) {
@@ -25,7 +26,8 @@ const checkAuth: RequestHandler = (req, res, next) => {
     const decodedToken = jwt.verify(token, process.env.JWT_SECRET!) as UserData;
     req.userData = {
       userId: decodedToken.userId,
-      username: decodedToken.username,
+      name: decodedToken.name,
+      profilePic: decodedToken.profilePic,
     };
     return next();
   } catch (error: any) {
@@ -33,4 +35,4 @@ const checkAuth: RequestHandler = (req, res, next) => {
   }
 };
 
-export default checkAuth;
+export default authMiddleware;

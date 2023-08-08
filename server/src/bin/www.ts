@@ -3,31 +3,32 @@
 /**
  * Module dependencies.
  */
-import { Request } from "express-serve-static-core";
+// import { Request } from "express-serve-static-core";
 import debug from "debug";
 import http from "http";
-import jwt from "jsonwebtoken";
-import * as WebSocket from "ws";
-import fs from "fs/promises";
-import { fileURLToPath } from "url";
-import { dirname } from "path";
+// import jwt from "jsonwebtoken";
+// import * as WebSocket from "ws";
+// import fs from "fs/promises";
+// import { fileURLToPath } from "url";
+// import { dirname } from "path";
 debug("textract-upload:server");
 
-import { UserData } from "../middleware/check-auth.js";
-import storeMessage from "../util/storeMessage.js";
-import app from "../app.js";
+// import { UserData } from "../middleware/auth-middleware.js";
+// import storeMessage from "../util/store-message.js";
 import mongooseConnect from "../config/database.js";
+import socket from "../socket.js";
+import app from "../app.js";
 
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = dirname(__filename);
+// const __filename = fileURLToPath(import.meta.url);
+// const __dirname = dirname(__filename);
 
-interface WebSocketClient extends WebSocket {
-  // isAlive?: boolean;
-  // timer?: NodeJS.Timer;
-  // deathTimer?: NodeJS.Timeout;
-  userId?: string;
-  username?: string;
-}
+// interface WebSocketClient extends WebSocket {
+//   // isAlive?: boolean;
+//   // timer?: NodeJS.Timer;
+//   // deathTimer?: NodeJS.Timeout;
+//   userId?: string;
+//   username?: string;
+// }
 
 /**
  * Get port from environment and store in Express.
@@ -46,121 +47,69 @@ const server = http.createServer(app);
  * Listen on provided port, on all network interfaces.
  */
 mongooseConnect().then(() => {
-  const wss = new WebSocket.WebSocketServer({ server: server });
-  wss.on("connection", (connection: WebSocketClient, req: Request) => {
-    // notify everyone about online users (when someone connects)
-    let notifyTimer: NodeJS.Timeout;
-    function notifyOnlineUsers() {
-      clearTimeout(notifyTimer);
-      [...wss.clients].forEach((client) => {
-        client.send(
-          JSON.stringify({
-            online: [...wss.clients].map((c: any) => ({
-              userId: c.userId,
-              username: c.username,
-            })),
-          })
-        );
-      });
-    }
-
-    // connection.isAlive = true;
-    // connection.timer = setInterval(() => {
-    //   connection.ping();
-    //   connection.deathTimer = setTimeout(() => {
-    //     connection.isAlive = false;
-    //     clearInterval(connection.timer);
-    //     connection.terminate();
-    //     notifyOnlineUsers();
-    //     console.log("dead");
-    //   });
-    // }, 5000);
-
-    // connection.on("pong", () => {
-    //   clearTimeout(connection.deathTimer);
-    // });
-
-    // read username and id from the cookie for this connection
-    const cookies = req.headers.cookie;
-    if (cookies) {
-      const token = cookies
-        .split(",")
-        .find((str) => str.startsWith("token="))
-        ?.split("=")[1];
-      if (token) {
-        try {
-          const { userId, username } = jwt.verify(token, process.env.JWT_SECRET!) as UserData;;
-          connection.userId = userId;
-          connection.username = username;
-        } catch (error: any) {
-          console.log(error);
-        }
-      }
-
-      connection.on("message", async (message: Buffer, isBinary: boolean) => {
-        const messageData = JSON.parse(message.toString());
-        const { recipient, formattedText, urlPreviewData, file } =
-          messageData?.message;
-        let filename: string | undefined;
-        try {
-          if (
-            file ||
-            urlPreviewData ||
-            (formattedText &&
-              (formattedText[0]?.insert?.trim() !== "\n" ||
-                formattedText.length > 1))
-          )
-            if (file) {
-              filename = `${new Date().toISOString().replace(/:/g, "_")}-${
-                file.name
-              }`;
-              const path = __dirname + "../../../uploads/" + filename;
-              const bufferData = Buffer.from(file.data);
-              await fs.writeFile(path, bufferData);
-            }
-          if (recipient && connection.userId) {
-            const messageDoc = await storeMessage({
-              sender: connection.userId,
-              recipient: recipient,
-              formattedText: formattedText,
-              urlPreviewData: urlPreviewData,
-              filename: filename,
-            });
-            [...wss.clients]
-              .filter((c: any) => c.userId === recipient)
-              .forEach((client) =>
-                client.send(
-                  JSON.stringify({
-                    messageId: messageDoc.id,
-                    sender: connection.userId,
-                    recipient: messageDoc.recipient,
-                    urlPreviewData,
-                    formattedText,
-                    filename,
-                  })
-                )
-              );
-          }
-        } catch (error: any) {
-          console.log(error);
-        }
-      });
-    }
-
-    notifyOnlineUsers();
-
-    connection.on("close", (connection: WebSocket) => {
-      clearTimeout(notifyTimer);
-      notifyTimer = setTimeout(() => {
-        notifyOnlineUsers();
-      }, 3000);
-    });
-  });
   server.listen(port, () =>
     console.log(`Server is listening on http://localhost:${port}/`)
   );
   server.on("error", onError);
   server.on("listening", onListening);
+
+  const io = socket.init(server);
+  io.on("connection", (socket) => {
+    console.log("Client Connected: ", socket.id);
+
+    socket.on("disconnect", () => {
+      console.log("Client Disconnected: ", socket.id);
+    });
+
+    socket.on(
+      "setup connection",
+      async (userId: string, friendsOfUser: string[]) => {
+        await socket.join(userId);
+
+        const onlineFriends: string[] = [];
+        friendsOfUser.forEach((friendId: string) => {
+          if (io.sockets.adapter.rooms.has(friendId)) {
+            onlineFriends.push(friendId);
+          }
+        });
+        socket.in(onlineFriends).emit("friend joined", userId); // This reduces the number of separate event emissions and may be more performant, especially if you have many online friends.
+        socket.emit("online friends", onlineFriends);
+      }
+    );
+
+    socket.on("join chat", (chatId) => {
+      socket.join(chatId);
+    });
+
+    socket.on(
+      "before disconnect",
+      async (userId: string, friendsOfUser: string[]) => {
+        await socket.leave(userId);
+        try {
+          if (!io.sockets.adapter.rooms.has(userId)) {
+            socket.in(friendsOfUser).emit("friend left", userId);
+          }
+        } catch (error: any) {
+          console.log(error.message);
+        }
+      }
+    );
+
+    socket.on("new message", (newMessageReceived) => {
+      const chat = newMessageReceived.chat;
+
+      // console.log(newMessageReceived);
+      // console.log(newMessageReceived.chat.users);
+
+      if (!chat.users) return console.log("chat.users not defined");
+
+      chat.users.forEach((user: any) => {
+        if (user === newMessageReceived.sender) return;
+
+        socket.in(user).emit("message received", newMessageReceived);
+      });
+    });
+  });
 });
 
 /**

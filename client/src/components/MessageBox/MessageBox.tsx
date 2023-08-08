@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect, useRef } from "react";
 import ReactQuill from "react-quill";
 
 import "./MessageBox.css";
@@ -16,9 +16,6 @@ const modules = {
     ["blockquote"],
     ["code", "code-block"],
   ],
-  clipboard: {
-    matchVisual: false,
-  },
 };
 
 const formats = [
@@ -34,6 +31,14 @@ const formats = [
 
 const MessageBox: React.FC<MessageBoxProps> = (props) => {
   const { value, previewData } = props;
+
+  const messageBoxRef = useRef<ReactQuill>(null);
+
+  useEffect(() => {
+    if (messageBoxRef.current) {
+      messageBoxRef.current.getEditor().setContents(value);
+    }
+  }, [value]);
 
   return (
     <>
@@ -66,10 +71,10 @@ const MessageBox: React.FC<MessageBoxProps> = (props) => {
         </div>
       )}
       <ReactQuill
+        ref={messageBoxRef}
         className="message-box"
         modules={modules}
         formats={formats}
-        value={value}
         readOnly
       />
     </>

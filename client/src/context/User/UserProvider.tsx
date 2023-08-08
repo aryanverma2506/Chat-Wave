@@ -8,26 +8,29 @@ interface UserProviderProps extends React.PropsWithChildren {}
 let logoutTimer: NodeJS.Timeout;
 
 const UserProvider: React.FC<UserProviderProps> = (props) => {
-  const [id, setId] = useState<string | null>(null);
-  const [username, setUsername] = useState<string | null>(null);
+  const [id, setId] = useState<string>();
+  const [name, setName] = useState<string>();
+  const [profilePicUrl, setProfilePicUrl] = useState<string>();
 
   const { sendRequest } = useHttpClient();
 
   const logout = useCallback(async () => {
     try {
-      await sendRequest({ url: "/logout", method: "POST" });
+      await sendRequest({ url: "/user/logout", method: "POST" });
     } catch (error: any) {
       console.log(error);
     }
     localStorage.removeItem("tokenExpirationTime");
-    setId(() => null);
-    setUsername(() => null);
+    setId(() => undefined);
+    setName(() => undefined);
+    setProfilePicUrl(() => undefined);
   }, [sendRequest]);
 
   const login = useCallback(
     (
-      providedId: string | null,
-      providedName: string | null,
+      providedId?: string,
+      providedName?: string,
+      providedPicUrl?: string,
       tokenExpirationDate?: Date
     ) => {
       if (tokenExpirationDate) {
@@ -37,10 +40,12 @@ const UserProvider: React.FC<UserProviderProps> = (props) => {
         );
         clearTimeout(logoutTimer);
         setId(() => providedId);
-        setUsername(() => providedName);
-        logoutTimer = setTimeout(() => {
-          logout();
-        }, tokenExpirationDate.getTime() - new Date().getTime());
+        setName(() => providedName);
+        setProfilePicUrl(() => providedPicUrl);
+        logoutTimer = setTimeout(
+          logout,
+          tokenExpirationDate.getTime() - new Date().getTime()
+        );
       }
     },
     [logout]
@@ -55,10 +60,11 @@ const UserProvider: React.FC<UserProviderProps> = (props) => {
         );
         if (tokenExpirationDate > new Date()) {
           try {
-            const responseData = await sendRequest({ url: "/profile" });
+            const responseData = await sendRequest({ url: "/user/profile" });
             login(
               responseData.userId,
-              responseData.username,
+              responseData.name,
+              responseData.profilePic,
               tokenExpirationDate
             );
           } catch (error: any) {
@@ -77,7 +83,8 @@ const UserProvider: React.FC<UserProviderProps> = (props) => {
     <UserContext.Provider
       value={{
         id,
-        username,
+        name,
+        profilePicUrl,
         login,
         logout,
       }}

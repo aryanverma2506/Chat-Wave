@@ -1,26 +1,28 @@
-import { Document, Schema, model } from "mongoose";
+import { Document, Schema, Types, model } from "mongoose";
 
-interface MessageDocument extends Document {
-  sender: Schema.Types.ObjectId;
-  recipient: Schema.Types.ObjectId;
-  formattedText: string;
-  urlPreviewData: Object;
-  filename: string;
+import { ChatDocument } from "./chat-model";
+import { UserDocument } from "./user-model";
+export interface MessageDocument extends Document {
+  sender: UserDocument;
+  chat: ChatDocument;
+  content: {
+    formattedText: [];
+    urlPreviewData: Object;
+    filename: string;
+  };
 }
 
 const messageSchema = new Schema<MessageDocument>(
   {
     sender: {
-      type: Schema.Types.ObjectId,
+      type: Types.ObjectId,
       ref: "User",
     },
-    recipient: {
-      type: Schema.Types.ObjectId,
-      ref: "User",
+    chat: {
+      type: Types.ObjectId,
+      ref: "Chat",
     },
-    formattedText: Array,
-    urlPreviewData: Object,
-    filename: String,
+    content: { formattedText: Array, urlPreviewData: Object, filename: String },
   },
   { timestamps: true }
 );

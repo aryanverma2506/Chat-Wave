@@ -12,6 +12,7 @@ interface InputProps extends React.PropsWithChildren {
   value?: string | number;
   style?: React.CSSProperties;
   accept?: string;
+  required?: boolean;
   disabled?: boolean;
   className?: string;
   placeholder?: string;
@@ -36,6 +37,7 @@ const Input: React.FC<InputProps> = (props) => {
     value,
     style,
     accept,
+    required,
     disabled,
     className,
     placeholder,
@@ -69,6 +71,7 @@ const Input: React.FC<InputProps> = (props) => {
             style={style}
             accept={accept}
             ref={filePickerRef}
+            required={required}
             disabled={disabled}
             className={className}
             placeholder={placeholder}
@@ -91,6 +94,7 @@ const Input: React.FC<InputProps> = (props) => {
           id={id?.toString()}
           value={value}
           style={style}
+          required={required}
           disabled={disabled}
           className={className}
           placeholder={placeholder}
@@ -107,6 +111,7 @@ const Input: React.FC<InputProps> = (props) => {
           step={step}
           value={value}
           style={style}
+          required={required}
           disabled={disabled}
           className={className}
           placeholder={placeholder}

@@ -8,6 +8,11 @@ import Input from "../Input/Input";
 import Button from "../Button/Button";
 import Contact from "../Contact/Contact";
 import { useHttpClient } from "../../hooks/useHttpClient-hook";
+import {
+  DirectChatModel,
+  DirectChatObject,
+} from "../../models/directChat.model";
+import { GroupChatModel } from "../../models/groupChat.model";
 import "./ChatInput.css";
 
 const icons = Quill.import("ui/icons");
@@ -39,12 +44,8 @@ icons[
   "code-block"
 ] = `<span class="ql-formats-icon my-2 pl-3"><i class="fa-light fa-square-code"></i></span>`;
 
-interface UserObject {
-  [key: string]: { username: string; online: boolean };
-}
-
 interface ChatInputProps extends React.PropsWithChildren {
-  users: UserObject | null;
+  chatInfo: GroupChatModel | DirectChatModel | null;
   fileChangeHandler: (file: File) => void;
   onSubmit: (
     event: React.FormEvent,
@@ -68,17 +69,17 @@ function isValidURL(url: string) {
 }
 
 const ChatInput: React.FC<ChatInputProps> = (props) => {
-  const { users, fileChangeHandler, onSubmit } = props;
+  const { chatInfo, fileChangeHandler, onSubmit } = props;
 
   const [editorHtml, setEditorHtml] = useState<string>("");
+  const [editorContent, setEditorContent] = useState<DeltaStatic>();
   const [showEmojiPicker, setShowEmojiPicker] = useState<boolean>(false);
-  const [mentionSuggestions, setMentionSuggestions] = useState<UserObject>({});
+  const [mentionSuggestions, setMentionSuggestions] =
+    useState<DirectChatObject>({});
   const [previewData, setPreviewData] = useState<any | null>(null);
-  const [previousContent, setPreviousContent] = useState<DeltaStatic>();
 
   const mentionChars = ["@"];
   const quillRef = useRef<ReactQuill>(null);
-  const submitBtnRef = useRef<HTMLButtonElement>(null);
   const emojiPickerRef = useRef<HTMLDivElement>(null);
 
   const { sendRequest } = useHttpClient();
@@ -144,15 +145,15 @@ const ChatInput: React.FC<ChatInputProps> = (props) => {
   }
 
   function searchMentionsHandler(searchTerm: string) {
-    if (users) {
-      const filteredUsers: UserObject = {};
+    if (chatInfo && chatInfo.isGroupChat && chatInfo.users?.length) {
+      const filteredUsers: DirectChatObject = {};
 
-      for (const key in users) {
+      for (const user of chatInfo.users) {
         if (
-          users[key].username &&
-          users[key].username.toLowerCase().includes(searchTerm.toLowerCase())
+          user.name &&
+          user.name.toLowerCase().includes(searchTerm.toLowerCase())
         ) {
-          filteredUsers[key] = users[key];
+          filteredUsers[user._id] = user;
         }
       }
 
@@ -184,6 +185,15 @@ const ChatInput: React.FC<ChatInputProps> = (props) => {
     }
   }
 
+  function enterKeyHandler() {
+    if (quillRef.current) {
+      const editor = quillRef.current.getEditor();
+      const cursorPosition = editor.getSelection(true)?.index;
+
+      editor.deleteText(cursorPosition - 1, 1);
+    }
+  }
+
   function atSymbolHandler() {
     if (quillRef.current) {
       const editor = quillRef.current.getEditor();
@@ -202,10 +212,10 @@ const ChatInput: React.FC<ChatInputProps> = (props) => {
   }
 
   function findRemovedURL(
-    currentDelta: DeltaStatic,
+    currentDelta?: DeltaStatic,
     previousDelta?: DeltaStatic
   ) {
-    if (!previousDelta) {
+    if (!currentDelta || !previousDelta) {
       return null;
     }
 
@@ -224,18 +234,23 @@ const ChatInput: React.FC<ChatInputProps> = (props) => {
   }
 
   async function editorChangeHandler(
-    content: string,
-    delta: DeltaStatic,
-    source: Sources,
-    editor: ReactQuill.UnprivilegedEditor
+    callback?: () => void,
+    content?: string,
+    delta?: DeltaStatic,
+    source?: Sources,
+    editor?: ReactQuill.UnprivilegedEditor
   ) {
-    setEditorHtml(content);
+    if (callback) {
+      return callback();
+    }
+    setEditorHtml(() => content || "");
     if (source === "user") {
-      const removedURL = findRemovedURL(delta, previousContent);
+      const removedURL = findRemovedURL(delta, editorContent); // we need previous editorContent not the updated one hence the setEditorContent is defined after this check
       if (removedURL) {
         setPreviewData(() => null);
       }
     }
+    setEditorContent(() => editor?.getContents());
     if (quillRef.current) {
       const editor = quillRef.current.getEditor();
       const currentText = editor.getText();
@@ -274,8 +289,32 @@ const ChatInput: React.FC<ChatInputProps> = (props) => {
       } else {
         setMentionSuggestions({});
       }
-      setPreviousContent(() => editor.getContents());
     }
+  }
+
+  function submitHandler(event: React.FormEvent) {
+    event.preventDefault();
+    const updatedEditorContent = quillRef.current?.getEditor().getContents();
+    if (updatedEditorContent?.ops) {
+      // const firstOp = updatedEditorContent.ops[0];
+      // firstOp.insert = firstOp.insert.replace(/^[\s\n]+/, "");
+      const lastOp =
+        updatedEditorContent.ops[updatedEditorContent.ops.length - 1];
+      lastOp.insert = lastOp.insert.replace(/[\s\n]+$/g, "\n");
+    }
+    updatedEditorContent &&
+      quillRef.current?.getEditor().setContents(updatedEditorContent);
+    setEditorContent(() => updatedEditorContent);
+
+    onSubmit(event, editorContent, previewData, () => {
+      editorChangeHandler(
+        setEditorHtml.bind(null, () => {
+          setTimeout(() => quillRef.current?.editor?.blur(), 100);
+          return "";
+        })
+      );
+      setPreviewData(() => null);
+    });
   }
 
   const modules = {
@@ -301,19 +340,6 @@ const ChatInput: React.FC<ChatInputProps> = (props) => {
     "code",
     "code-block",
   ];
-
-  function submitHandler(event: React.FormEvent) {
-    event.preventDefault();
-    onSubmit(
-      event,
-      quillRef.current?.getEditor().setContents(previousContent!),
-      previewData,
-      () => {
-        setEditorHtml(() => "");
-        setPreviewData(() => null);
-      }
-    );
-  }
 
   return (
     <form
@@ -362,16 +388,18 @@ const ChatInput: React.FC<ChatInputProps> = (props) => {
       )}
       <div ref={emojiPickerRef} className="w-full">
         {mentionSuggestions &&
-          Object.keys(mentionSuggestions).map((userId) => (
+          Object.keys(mentionSuggestions).map((chatId) => (
             <Contact
-              key={userId}
-              userId={userId}
-              online={mentionSuggestions[userId].online}
-              username={mentionSuggestions[userId].username}
+              key={chatId}
+              isGroupChat={mentionSuggestions[chatId].isGroupChat}
+              chatId={chatId}
+              online={mentionSuggestions[chatId].isOnline}
+              name={mentionSuggestions[chatId].name}
+              profilePic={mentionSuggestions[chatId].profilePic}
               className={"text-white"}
               onClick={insertMentionHandler.bind(
-                this,
-                mentionSuggestions[userId].username
+                null,
+                mentionSuggestions[chatId].name
               )}
             />
           ))}
@@ -396,17 +424,11 @@ const ChatInput: React.FC<ChatInputProps> = (props) => {
           modules={modules}
           formats={formats}
           value={editorHtml}
-          onChange={editorChangeHandler}
+          onChange={editorChangeHandler.bind(null, undefined)}
           onKeyDown={(e) => {
-            if (
-              e.keyCode === 13 &&
-              !e.shiftKey &&
-              !e.ctrlKey &&
-              submitBtnRef.current &&
-              previousContent
-            ) {
-              quillRef.current?.getEditor().setContents(previousContent);
-              submitBtnRef.current.click();
+            if (e.keyCode === 13 && !e.shiftKey && !e.ctrlKey) {
+              enterKeyHandler();
+              submitHandler(e);
             }
           }}
         />
@@ -429,13 +451,12 @@ const ChatInput: React.FC<ChatInputProps> = (props) => {
           <Button type="button" className="my-2 pl-1" onClick={atSymbolHandler}>
             <i className="fa-light fa-at"></i>
           </Button>
-          <button
+          <Button
             type="submit"
             className="bg-green-500 pl-2 pr-6 text-white rounded-sm ml-auto mr-2"
-            ref={submitBtnRef}
           >
             <i className="fa-solid fa-paper-plane-top"></i>
-          </button>
+          </Button>
         </div>
       </div>
     </form>

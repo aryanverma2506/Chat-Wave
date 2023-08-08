@@ -2,8 +2,8 @@ import MessageModel from "../models/message-model.js";
 
 interface MessageData {
   sender: string;
-  recipient: string;
-  formattedText?: string;
+  chatId: string;
+  formattedText?: [];
   urlPreviewData?: Object;
   filename?: string;
 }
@@ -11,14 +11,14 @@ interface MessageData {
 export default async function storeMessage(messageData: MessageData) {
   const message = new MessageModel({
     sender: messageData.sender,
-    recipient: messageData.recipient,
+    chat: messageData.chatId,
     formattedText: messageData.formattedText,
   });
   messageData.formattedText &&
-    (message.formattedText = messageData.formattedText);
-  messageData.filename && (message.filename = messageData.filename);
+    (message.content.formattedText = messageData.formattedText);
+  messageData.filename && (message.content.filename = messageData.filename);
   messageData.urlPreviewData &&
-    (message.urlPreviewData = messageData.urlPreviewData);
-  await message.save();
-  return message;
+    (message.content.urlPreviewData = messageData.urlPreviewData);
+  message;
+  return message.save();
 }

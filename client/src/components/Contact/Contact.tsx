@@ -3,35 +3,51 @@ import React from "react";
 import Avatar from "../Avatar/Avatar";
 
 interface ContactProps extends React.PropsWithChildren {
-  userId?: string;
+  isGroupChat: boolean;
+  chatId?: string;
   online?: boolean;
-  selectedUserId?: string;
-  username?: string;
+  activeChatId?: string;
+  name?: string;
+  profilePic?: string;
   className?: string;
   onClick: () => void;
 }
 
 const Contact: React.FC<ContactProps> = (props) => {
-  const { userId, online, selectedUserId, username, className, onClick } =
-    props;
+  const {
+    isGroupChat,
+    chatId,
+    online,
+    activeChatId,
+    profilePic,
+    name,
+    className,
+    onClick,
+  } = props;
 
-  if (!userId || !username) {
+  if (!chatId || !name) {
     return <></>;
   }
 
   return (
     <li
       className={`border-b border-gray-500 flex items-center gap-2 cursor-pointer text-white ${
-        userId === selectedUserId ? "dark-theme-2" : ""
+        chatId === activeChatId ? "dark-theme-2" : ""
       } ${className}`}
       onClick={onClick}
     >
-      {userId === selectedUserId && (
+      {chatId === activeChatId && (
         <div className="w-1 bg-green-500 h-12 rounded-r-md"></div>
       )}
       <div className="flex gap-2 py-2 pl-4 pr-8 items-center">
-        <Avatar online={online} userId={userId} username={username} />
-        <span>{username}</span>
+        <Avatar
+          isGroupChat={isGroupChat}
+          online={online}
+          userId={chatId}
+          name={name}
+          profilePic={profilePic}
+        />
+        <span>{name}</span>
       </div>
     </li>
   );

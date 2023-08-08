@@ -114,6 +114,10 @@ em-emoji-picker {
   pointer-events: none;
 }
 
+.drawer-container {
+  transition: left 0.3s ease;
+}
+
 @supports not (-webkit-mask-clip: text) {
   .figure figcaption {
     mask: none;

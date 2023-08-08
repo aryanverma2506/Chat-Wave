@@ -1,6 +1,6 @@
 import jwt from "jsonwebtoken";
 import HttpError from "../models/http-error.js";
-const checkAuth = (req, res, next) => {
+const authMiddleware = (req, res, next) => {
     try {
         const token = req.cookies.token;
         if (!token) {
@@ -9,7 +9,8 @@ const checkAuth = (req, res, next) => {
         const decodedToken = jwt.verify(token, process.env.JWT_SECRET);
         req.userData = {
             userId: decodedToken.userId,
-            username: decodedToken.username,
+            name: decodedToken.name,
+            profilePic: decodedToken.profilePic,
         };
         return next();
     }
@@ -17,4 +18,4 @@ const checkAuth = (req, res, next) => {
         return next(new HttpError(error.message || "Authentication failed", 403));
     }
 };
-export default checkAuth;
+export default authMiddleware;

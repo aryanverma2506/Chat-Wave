@@ -3,19 +3,29 @@ import uniqueValidator from "mongoose-unique-validator";
 import bcrypt from "bcryptjs";
 
 export interface UserDocument extends Document {
-  username: string;
+  name: string;
+  email: string;
   password: string;
+  profilePic: string;
   matchPassword: (plainPassword: string) => Promise<boolean>;
 }
 
 const userSchema = new Schema<UserDocument>(
   {
-    username: {
+    name: {
+      type: String,
+      required: true,
+    },
+    email: {
       type: String,
       unique: true,
       required: true,
     },
     password: { type: String, required: true },
+    profilePic: {
+      type: String,
+      default: "assets/profilePic/default-user-pic.png",
+    },
   },
   { timestamps: true }
 );

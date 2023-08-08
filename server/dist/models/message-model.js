@@ -1,16 +1,14 @@
-import { Schema, model } from "mongoose";
+import { Schema, Types, model } from "mongoose";
 const messageSchema = new Schema({
     sender: {
-        type: Schema.Types.ObjectId,
+        type: Types.ObjectId,
         ref: "User",
     },
-    recipient: {
-        type: Schema.Types.ObjectId,
-        ref: "User",
+    chat: {
+        type: Types.ObjectId,
+        ref: "Chat",
     },
-    formattedText: Array,
-    urlPreviewData: Object,
-    filename: String,
+    content: { formattedText: Array, urlPreviewData: Object, filename: String },
 }, { timestamps: true });
 const MessageModel = model("Message", messageSchema);
 export default MessageModel;
