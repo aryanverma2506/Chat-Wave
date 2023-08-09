@@ -97,6 +97,8 @@ Chat-Wave-MERN-Application/
 │   │   ├── components/
 │   │   ├── context/
 │   │   ├── hooks/
+│   │   ├── models/
+│   │   ├── screens/
 │   │   ├── App.tsx
 │   │   └── index.tsx
 │   ├── tsconfig.json
@@ -115,6 +117,7 @@ Chat-Wave-MERN-Application/
 │   │   ├── routes/
 │   │   ├── util/
 │   │   └── app.js
+│   │   └── socket.js
 │   ├── src/
 │   │   ├── bin/
 │   │   │   └── www.ts
@@ -125,6 +128,7 @@ Chat-Wave-MERN-Application/
 │   │   ├── routes/
 │   │   ├── util/
 │   │   └── app.ts
+│   │   └── socket.ts
 │   ├── uploads/
 │   ├── tsconfig.json
 │   ├── package.json
